@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  userdb:
+    image: postgres:13
+    container_name: userdb
+    environment:
+      POSTGRES_DB: userdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - test-synapsis-network
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    depends_on:
+      - userdb
+    environment:
+      DB_HOST: userdb
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: userdb
+    ports:
+      - "50051:50051"
+    networks:
+      - test-synapsis-network
+
+networks:
+  test-synapsis-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -1,0 +1,86 @@
+package auth
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+)
+
+var JWT_SIGNATURE_KEY = []byte("secret")
+
+func GenerateToken(userID int64) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"user_id": userID,
+			"exp":     time.Now().Add(time.Hour * 24).Unix(),
+		})
+
+	tokenString, err := token.SignedString(JWT_SIGNATURE_KEY)
+
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+func VerifyToken(tokenString string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return JWT_SIGNATURE_KEY, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	} else {
+		return nil, fmt.Errorf("unexpected signing method: %v", err)
+	}
+
+}
+
+func AuthInterceptor(ctx context.Context) (context.Context, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("missing metadata")
+	}
+
+	token := md["authorization"]
+	if len(token) == 0 {
+		return nil, fmt.Errorf("missing token")
+	}
+
+	claims, err := VerifyToken(token[0])
+	if err != nil {
+		return nil, err
+	}
+
+	newCtx := context.WithValue(ctx, "user_id", claims["user_id"])
+	return newCtx, nil
+}
+
+func UnaryAuthInterceptor() grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		newCtx, err := AuthInterceptor(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return handler(newCtx, req)
+	}
+}

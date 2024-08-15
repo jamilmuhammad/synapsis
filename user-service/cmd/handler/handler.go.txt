@@ -1,0 +1,64 @@
+package handler
+
+import (
+	"context"
+	"user-service/internal/usecase"
+	"user-service/model"
+	"user-service/userpb"
+)
+
+type UserHandler struct {
+	userpb.UnimplementedUserServiceServer
+	userService *usecase.UserUseCase
+}
+
+func NewUserHandler(userService *usecase.UserUseCase) *UserHandler {
+	return &UserHandler{userService: userService}
+}
+
+func (h *UserHandler) CreateUser(ctx context.Context, req *userpb.CreateUserRequest) (*userpb.User, error) {
+	result, err := h.userService.CreateUser(ctx, req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (h *UserHandler) GetDetail(ctx context.Context, req *userpb.GetDetailUserRequest) (*userpb.User, error) {
+	user, err := h.userService.GetDetail(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &userpb.User{Id: user.ID, Username: user.Username, Email: user.Email}, nil
+}
+
+func (h *UserHandler) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequest) (*userpb.User, error) {
+	user := &model.User{
+		ID:       req.Id,
+		Username: req.Username,
+		Email:    req.Email,
+	}
+	err := h.userService.UpdateUser(user)
+	if err != nil {
+		return nil, err
+	}
+	return &userpb.User{Id: user.ID, Username: user.Username, Email: user.Email}, nil
+}
+
+func (h *UserHandler) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequest) (*userpb.DeleteUserResponse, error) {
+	err := h.userService.DeleteUser(req.Id)
+	if err != nil {
+		return &userpb.DeleteUserResponse{Success: false}, err
+	}
+	return &userpb.DeleteUserResponse{Success: true}, nil
+}
+
+func (h *UserHandler) Login(ctx context.Context, req *userpb.LoginRequest) (*userpb.LoginResponse, error) {
+	token, err := h.userService.Login(req.Username, req.Password)
+	if err != nil {
+		return nil, err
+	}
+	return &userpb.LoginResponse{Token: token}, nil
+}

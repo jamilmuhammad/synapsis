@@ -1,0 +1,6 @@
+DB_NAME: "user"
+DB_PORT: "5432"
+DB_HOST: "userdb"
+DB_PASSWORD: "pass"
+DB_USER: "user"
+TIMEZONE: "Asia/Jakarta"
