@@ -2,14 +2,16 @@ package interfaces
 
 import (
 	"context"
-	"sharing_vasion_indonesia/api_gateway/internal/models"
-	article_proto "sharing_vasion_indonesia/pkg/proto"
+	user_proto "user-service/userpb"
 )
 
-type ArticleUseCase interface {
-	GetArticles(ctx context.Context, limit string, offset string) (*article_proto.GetArticlesResponse, error)
-	CreateArticle(ctx context.Context, payload models.CreateArticleRequest) (*article_proto.Post, error)
-	UpdateArticle(ctx context.Context, payload models.UpdateArticleRequest) (*article_proto.Post, error)
-	GetArticle(ctx context.Context, id string) (*article_proto.GetArticleResponse, error)
-	DeleteArticle(ctx context.Context, id string) error
+type UserInterfaceUseCase interface {
+	GetAllUsers(ctx context.Context, payload *user_proto.GetAllUsersRequest) (*user_proto.GetAllUsersResponse, error)
+	CreateUser(ctx context.Context, post *user_proto.CreateUserRequest) (*user_proto.User, error)
+	UpdateUser(ctx context.Context, post *user_proto.UpdateUserRequest) (*user_proto.User, error)
+	GetUserById(ctx context.Context, payload *user_proto.GetDetailUserRequest) (*user_proto.GetUserResponse, error)
+	GetDetailByEmail(ctx context.Context, payload *user_proto.GetDetailUserByEmailRequest) (*user_proto.User, error)
+	DeleteUser(ctx context.Context, id *user_proto.DeleteUserRequest) (*user_proto.DeleteUserResponse, error)
+	Login(ctx context.Context, payload *user_proto.LoginRequest) (*user_proto.LoginResponse, error)
+	RefreshToken(ctx context.Context, payload *user_proto.RefreshTokenRequest) (*user_proto.RefreshTokenResponse, error)
 }

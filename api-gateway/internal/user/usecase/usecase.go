@@ -2,10 +2,8 @@ package usecase
 
 import (
 	"context"
-	"log"
-	"api_gateway/internal/models"
+
 	user_proto "user-service/userpb"
-	"strconv"
 )
 
 type userUseCase struct {
@@ -16,85 +14,92 @@ func NewUserUseCase(userClient user_proto.UserServiceClient) *userUseCase {
 	return &userUseCase{userClient}
 }
 
-func (u *userUseCase) GetUsers(ctx context.Context, limit string, offset string) (*user_proto.GetUserRequest, error) {
+func (u *userUseCase) GetAllUsers(ctx context.Context, payload *user_proto.GetAllUsersRequest) (*user_proto.GetAllUsersResponse, error) {
 
-	limitInt, err := strconv.Atoi(limit)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	offsetInt, err := strconv.Atoi(offset)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
+	result, err := u.userClient.GetAllUsers(ctx, payload)
 
-	result, err := u.userClient.GetUsers(ctx, &user_proto.GetUsersRequest{Limit: int32(limitInt), Offset: int32(offsetInt)})
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
 	return result, nil
 }
 
-func (u *userUseCase) CreateUser(ctx context.Context, payload models.CreateUserRequest) (*user_proto.Post, error) {
+func (u *userUseCase) CreateUser(ctx context.Context, payload *user_proto.CreateUserRequest) (*user_proto.User, error) {
 
-	req := &user_proto.CreateUserRequest{
-		Title:    payload.Title,
-		Content:  payload.Content,
-		Category: payload.Category,
-		Status:   payload.Status,
-	}
+	result, err := u.userClient.CreateUser(ctx, payload)
 
-	result, err := u.userClient.CreateUser(ctx, req)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
 	return result, nil
 }
 
-func (u *userUseCase) UpdateUser(ctx context.Context, payload models.UpdateUserRequest) (*user_proto.Post, error) {
-	id, err := strconv.Atoi(payload.ID)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	req := &user_proto.UpdateUserRequest{
-		Id:       int32(id),
-		Title:    payload.Title,
-		Content:  payload.Content,
-		Category: payload.Category,
-		Status:   payload.Status,
-	}
+func (uc *userUseCase) GetUserById(ctx context.Context, payload *user_proto.GetDetailUserRequest) (*user_proto.GetUserResponse, error) {
 
-	result, err := u.userClient.UpdateUserById(ctx, req)
+	result, err := uc.userClient.GetUserById(ctx, payload)
+
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
 	return result, nil
 }
 
-func (u *userUseCase) GetUser(ctx context.Context, id string) (*user_proto.GetUserResponse, error) {
-	result, err := u.userClient.GetUserById(ctx, &user_proto.GetUserByIdRequest{Id: id})
+func (uc *userUseCase) GetDetailByEmail(ctx context.Context, payload *user_proto.GetDetailUserByEmailRequest) (*user_proto.User, error) {
+
+	result, err := uc.userClient.GetUserByEmail(ctx, payload)
+
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
 	return result, nil
 }
 
-func (u *userUseCase) DeleteUser(ctx context.Context, id string) error {
-	_, err := u.userClient.DeleteUserById(ctx, &user_proto.DeleteUserRequest{Id: id})
+func (u *userUseCase) UpdateUser(ctx context.Context, payload *user_proto.UpdateUserRequest) (*user_proto.User, error) {
+
+	result, err := u.userClient.UpdateUser(ctx, payload)
+
 	if err != nil {
-		log.Println(err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return result, nil
+}
+
+func (u *userUseCase) DeleteUser(ctx context.Context, payload *user_proto.DeleteUserRequest) (*user_proto.DeleteUserResponse, error) {
+
+	result, err := u.userClient.DeleteUser(ctx, payload)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (uc *userUseCase) Login(ctx context.Context, payload *user_proto.LoginRequest) (*user_proto.LoginResponse, error) {
+	var result = &user_proto.LoginResponse{}
+
+	result, err := uc.userClient.Login(ctx, payload)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (uc *userUseCase) RefreshToken(ctx context.Context, payload *user_proto.RefreshTokenRequest) (*user_proto.RefreshTokenResponse, error) {
+	var result = &user_proto.RefreshTokenResponse{}
+
+	result, err := uc.userClient.RefreshToken(ctx, payload)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
