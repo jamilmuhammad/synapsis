@@ -1,16 +1,17 @@
 package server
 
 import (
+	"api-gateway/internal/user/handler"
+	"api-gateway/internal/user/usecase"
 	"context"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"sharing_vasion_indonesia/api_gateway/internal/article/delivery"
-	"sharing_vasion_indonesia/api_gateway/internal/article/usecase"
-	article_proto "sharing_vasion_indonesia/pkg/proto"
 	"syscall"
 	"time"
+
+	"user-service/userpb"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
@@ -30,18 +31,23 @@ func (s *server) Run() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	articleServicePort := ":9001"
-	articleServiceconn, err := grpc.DialContext(ctx, articleServicePort, grpc.WithInsecure())
+	userServiceAddress := "user-service:9001"
+	
+	userServiceconn, err := grpc.Dial(
+		userServiceAddress,
+		grpc.WithInsecure(),
+	)
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer articleServiceconn.Close()
+	defer userServiceconn.Close()
 
-	articleClient := article_proto.NewArticleServiceClient(articleServiceconn)
+	userClient := user.NewUserServiceClient(userServiceconn)
 
-	usecase := usecase.NewArticleUseCase(articleClient)
-	delivery := delivery.NewDelivery(usecase, s.mux)
-	delivery.Routes()
+	userUsecase := usecase.NewUserUseCase(userClient)
+	userHandler := handler.NewUserHandler(userUsecase, s.mux)
+	userHandler.Routes()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
