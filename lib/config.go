@@ -11,23 +11,23 @@ type AppConfig struct {
 }
 
 type DBConfig struct {
-	DB_NAME	string
-	DB_PORT	string
-	DB_HOST	string
-	DB_PASSWORD	string
-	DB_USER	string
+	DB_NAME     string
+	DB_PORT     string
+	DB_HOST     string
+	DB_PASSWORD string
+	DB_USER     string
 }
 
 type TokenConfig struct {
-	AccessToken	string
-	RefreshToken	string
+	AccessToken  string
+	RefreshToken string
 }
 
 type Config struct {
-	App           AppConfig
-	DB   DBConfig
-	Token TokenConfig
-	TimeZone      string
+	App      AppConfig
+	DB       DBConfig
+	Token    TokenConfig
+	TimeZone string
 }
 
 var Cfg Config
@@ -41,36 +41,37 @@ func getAppConfig() AppConfig {
 
 func getDBConfig() DBConfig {
 	return DBConfig{
-		DB_NAME: getStringOrPanic("DB_NAME"),
-		DB_HOST: getStringOrPanic("DB_HOST"),
-		DB_PORT: getStringOrPanic("DB_PORT"),
-		DB_USER: getStringOrPanic("DB_NAME"),
+		DB_NAME:     getStringOrPanic("DB_NAME"),
+		DB_HOST:     getStringOrPanic("DB_HOST"),
+		DB_PORT:     getStringOrPanic("DB_PORT"),
+		DB_USER:     getStringOrPanic("DB_USER"),
 		DB_PASSWORD: getStringOrPanic("DB_PASSWORD"),
 	}
 }
 
 func getTokenConfig() TokenConfig {
 	return TokenConfig{
-		AccessToken: getStringOrPanic("AccessToken"),
-		RefreshToken: getStringOrPanic("RefreshToken"),
+		AccessToken:  getStringOrPanic("Access_Token"),
+		RefreshToken: getStringOrPanic("Refresh_Token"),
 	}
 }
 
 func LoadConfigByFile(path, fileName, fileType string) Config {
-	viper.SetConfigName(fileName)
-	viper.SetConfigType(fileType)
-	viper.AddConfigPath(path)
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
+	v := viper.New()
+	v.SetConfigName(fileName)
+	v.SetConfigType(fileType)
+	v.AddConfigPath(path)
+	v.AutomaticEnv()
+	err := v.ReadInConfig()
 	if err != nil {
 		fmt.Printf("Error reading config file, use automatic environment instead %s\n", err)
 	}
 
 	Cfg = Config{
-		App:           getAppConfig(),
-		DB:   getDBConfig(),
-		Token: getTokenConfig(),
-		TimeZone:      viper.GetString("TIME_ZONE"),
+		App:      getAppConfig(),
+		DB:       getDBConfig(),
+		Token:    getTokenConfig(),
+		TimeZone: viper.GetString("TIME_ZONE"),
 	}
 
 	return Cfg
