@@ -10,7 +10,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"path/filepath"
 
 	"user-service/internal/handler"
 	"user-service/internal/repository"
