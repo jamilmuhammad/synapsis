@@ -1,21 +1,23 @@
 FROM golang:1.22.4-alpine3.20 as builder
 
 WORKDIR /app
-COPY go.mod go.sum ./
-COPY ./ /app/user-service/
+COPY . .
 
-#COPY go.mod go.sum ./
-WORKDIR /app/user-service
+WORKDIR /app/lib
 RUN go mod download
-RUN CGO_ENABLED=0 go build -o /usr/bin/user-service .
 
-#COPY . .
+WORKDIR /app/user-service
+RUN go mod download && go mod tidy
+
+RUN CGO_ENABLED=0 go build -o /usr/bin/user-service ./cmd
 
 #RUN go build -o main .
 FROM alpine
 
-EXPOSE 50051
-
 COPY --from=builder /usr/bin/user-service /usr/bin/user-service
+COPY --from=builder /app/user-service/migrations /app/user-service/migrations
+COPY --from=builder /app/user-service/cmd/config.yml /app/user-service/cmd/config.yml
+
+EXPOSE 9001
 
 CMD ["user-service"]

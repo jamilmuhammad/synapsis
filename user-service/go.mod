@@ -5,6 +5,7 @@ go 1.21.6
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.17.1
+	github.com/golang/protobuf v1.5.4
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/lib/pq v1.10.9
 	golang.org/x/crypto v0.25.0

@@ -2,30 +2,14 @@ package database
 
 import (
 	"context"
-	"fmt"
-	"lib"
 	"log"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-func InitDatabase() (*pgxpool.Pool, error) {
+func InitDatabase(ctx context.Context, dbURL string) (*pgxpool.Pool, error) {
 
-	cfg := lib.LoadConfigByFile("./cmd", "config", "yaml")
-
-	// Construct database connection string
-	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		cfg.DB.DB_USER,
-		cfg.DB.DB_PASSWORD,
-		cfg.DB.DB_HOST,
-		cfg.DB.DB_PORT,
-		cfg.DB.DB_NAME,
-	)
-
-	// Run migrations
-	if err := runMigrations(dbURL); err != nil {
-		log.Fatalf("Failed to run migrations: %v", err)
-	}
+	log.Println(dbURL, "db...")
 
 	// Create a connection pool
 	config, err := pgxpool.ParseConfig(dbURL)
@@ -33,10 +17,12 @@ func InitDatabase() (*pgxpool.Pool, error) {
 		log.Fatalf("Unable to parse connection string: %v\n", err)
 	}
 
-	conn, err := pgxpool.ConnectConfig(context.Background(), config)
+	conn, err := pgxpool.ConnectConfig(ctx, config)
+
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
+
 	defer conn.Close()
 
 	return conn, nil

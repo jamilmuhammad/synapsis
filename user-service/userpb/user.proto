@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package userpb;
+package user;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "./userpb";
+option go_package = "./;user";
 
 message User {
   int64 id = 1;
@@ -60,7 +60,7 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  GetUserResponse data = 1;
+  GetUserResponse user = 1;
   string access_token = 2;
   string refresh_token = 3;
 }
@@ -75,11 +75,26 @@ message GetAllUsersResponse {
   int32 total_count = 2;
 }
 
+message GetDetailUserByEmailRequest {
+  string email = 1;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
 service UserService {
   rpc GetAllUsers(GetAllUsersRequest) returns (GetAllUsersResponse);
   rpc GetUserById(GetDetailUserRequest) returns (GetUserResponse);
+  rpc GetUserByEmail(GetDetailUserByEmailRequest) returns (User);
   rpc CreateUser(CreateUserRequest) returns (User);
   rpc UpdateUser(UpdateUserRequest) returns (User);
   rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
 }

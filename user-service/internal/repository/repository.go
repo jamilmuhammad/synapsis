@@ -50,7 +50,7 @@ func (r *UserRepository) GetAllUsers(ctx context.Context, payload *user_proto.Ge
 
 	offset := (payload.Page - 1) * payload.Limit
 	query := `
-	    SELECT id, username, email, role, created_at, updated_at
+	    SELECT id, username, email, role, status
 	    FROM users
 	    ORDER BY id
 	    LIMIT $1 OFFSET $2
@@ -85,10 +85,10 @@ func (r *UserRepository) GetAllUsers(ctx context.Context, payload *user_proto.Ge
 	return &results, nil
 }
 
-func (r *UserRepository) GetDetail(ctx context.Context, id int64) (*user_proto.GetUserResponse, error) {
+func (r *UserRepository) GetUserById(ctx context.Context, payload *user_proto.GetDetailUserRequest) (*user_proto.GetUserResponse, error) {
 	var result user_proto.GetUserResponse
 	query := `SELECT id, username, email, role, status FROM users WHERE id = $1`
-	err := r.db.QueryRow(ctx, query, id).Scan(&result.Id, &result.Username, &result.Email, &result.Role, &result.Status)
+	err := r.db.QueryRow(ctx, query, payload.Id).Scan(&result.Id, &result.Username, &result.Email, &result.Role, &result.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -145,12 +145,12 @@ func (r *UserRepository) DeleteUser(ctx context.Context, id *user_proto.DeleteUs
 	return &user_proto.DeleteUserResponse{Success: true}, nil
 }
 
-func (r *UserRepository) GetDetailByEmail(ctx context.Context, email string) (*user_proto.User, error) {
+func (r *UserRepository) GetUserByEmail(ctx context.Context, payload *user_proto.GetDetailUserByEmailRequest) (*user_proto.User, error) {
 	var result user_proto.User
 
 	query := `SELECT id, username, email, password, role, status FROM users WHERE email = $1`
 
-	err := r.db.QueryRow(ctx, query, email).Scan(&result.Id, &result.Username, &result.Email, &result.Password, &result.Role, &result.Status)
+	err := r.db.QueryRow(ctx, query, payload.Email).Scan(&result.Id, &result.Username, &result.Email, &result.Password, &result.Role, &result.Status)
 
 	if err != nil {
 		return nil, err

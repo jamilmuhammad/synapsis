@@ -4,16 +4,19 @@ import (
 	"context"
 	"fmt"
 	"lib"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/metadata"
 )
 
 var JWT_SIGNATURE_KEY = []byte("secret")
 
 type UserClaims struct {
-	Id    string `json:"id"`
+	Id    int64 `json:"id"`
 	Username  string `json:"username"`
 	Email string `json:"email"`
 	Role string `json:"role"`
@@ -114,17 +117,20 @@ func ValidateRefreshToken(refreshToken string) (*UserClaims, error) {
 func AuthInterceptor(ctx context.Context) (context.Context, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, fmt.Errorf("missing metadata")
+		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
 	}
 
-	token := md["authorization"]
-	if len(token) == 0 {
-		return nil, fmt.Errorf("missing token")
+	authHeader, ok := md["authorization"]
+
+	if !ok || len(authHeader) == 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "authorization token is not provided")
 	}
 
-	claims, err := ValidateAccessToken(token[0])
+	tokenString := strings.TrimPrefix(authHeader[0], "Bearer ")
+
+	claims, err := ValidateAccessToken(tokenString)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Unauthenticated, "invalid token: %v", err)
 	}
 
 	type contextKey string

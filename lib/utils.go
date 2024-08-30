@@ -3,7 +3,6 @@ package lib
 import (
 	"github.com/spf13/viper"
 	"os"
-	"regexp"
 	"strconv"
 )
 
@@ -43,24 +42,10 @@ func getIntOrPanic(key string) int {
 	return getIntOrDefault(key, 0)
 }
 
-// CheckLicensePlateFormat checks if the license plate format is valid
-//
-//	func main() {
-//		// Example usage
-//		licensePlate := "B 1234 ABC" // Replace with any license plate number to test
-//
-//		if CheckLicensePlateFormat(licensePlate) {
-//			fmt.Printf("License plate '%s' format is valid.\n", licensePlate)
-//		} else {
-//			fmt.Printf("License plate '%s' format is invalid.\n", licensePlate)
-//		}
-//	}
-func CheckLicensePlateFormat(licensePlate string) bool {
-	// Regular expression for Indonesian license plate format
-	// Example: B 1234 AB or B 1234 XYZ
-	// Adjust the regular expression according to specific formats if needed.
-	regex := `^[A-Z]{1,2}\s\d{1,4}\s[A-Z]{1,3}$`
+type StatusEnum string
 
-	match, _ := regexp.MatchString(regex, licensePlate)
-	return match
-}
+const (
+	Pending  StatusEnum = "pending"
+	Verified StatusEnum = "verified"
+	Rejected StatusEnum = "rejected"
+)
