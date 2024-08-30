@@ -55,6 +55,9 @@ func WriteResponse(sp opentracing.Span, w http.ResponseWriter, err error, data a
 	case *ErrForbidden, ErrForbidden:
 		failResponseWriter(sp, w, err, http.StatusForbidden)
 		return
+	case *ErrUnauthorized, ErrUnauthorized:
+		failResponseWriter(sp, w, err, http.StatusUnauthorized)
+		return
 	case *ErrDuplicate, ErrDuplicate:
 		failResponseWriter(sp, w, err, http.StatusConflict)
 		return

@@ -36,6 +36,18 @@ func (e ErrForbidden) Error() string {
 	return e.Message
 }
 
+type ErrUnauthorized struct {
+	Message string
+}
+
+func NewErrUnauthorized(message string) *ErrUnauthorized {
+	return &ErrUnauthorized{Message: message}
+}
+
+func (e ErrUnauthorized) Error() string {
+	return e.Message
+}
+
 type ErrDuplicate struct {
 	Message string
 }
