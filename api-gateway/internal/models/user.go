@@ -17,10 +17,15 @@ type User struct {
 
 type CreateUserRequest struct {
 	Username    string `json:"username" validate:"required,min=20"`
-	Email  string `json:"email" validate:"required,min=20"`
+	Email  string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=6"`
 	Role   string `json:"role" validate:"required,oneof=member librarian admin"`
 	Status   string `json:"status" validate:"required,oneof=pending verified rejected"`
+}
+
+type GetAllUsersRequest struct {
+	Page string `json:"page" default:"1"`
+	Limit string `json:"limit" default:"10"`
 }
 
 type GetDetailUserRequest struct {
@@ -31,9 +36,22 @@ type UpdateUserRequest struct {
 	ID       string `json:"id" validate:"required"`
 	Username    string `json:"username" validate:"required,min=20"`
 	Email  string `json:"email" validate:"required,min=20"`
-	Password string `json:"password" validate:"required,min=6"`
+	Password string `json:"password" validate:"required,email"`
 	Role   string `json:"role" validate:"required,oneof=member librarian admin"`
 	Status   string `json:"status" validate:"required,oneof=pending verified rejected"`
+}
+
+type DeleteUserRequest struct {
+	ID       string `json:"id" validate:"required"`
+}
+
+type LoginUserRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6"`
+}
+
+type RefreshTokenRequest struct {
+	RefreshToken    string `json:"refresh_token" validate:"required"`
 }
 
 type UserResponse struct {
