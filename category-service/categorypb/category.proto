@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package category;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "./;category";
+
+message Category {
+  int64 id = 1;
+  string name = 2;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message CreateCategoryRequest {
+  string name = 1;
+}
+
+message GetDetailCategoryRequest {
+  int64 id = 1;
+}
+
+message GetCategoryResponse {
+  int64 id = 1;
+  string name = 2;
+}
+
+message UpdateCategoryRequest {
+  int64 id = 1;
+  string name = 2;
+}
+
+message DeleteCategoryRequest {
+  int64 id = 1;
+}
+
+message DeleteCategoryResponse {
+  bool success = 1;
+}
+
+message GetAllCategoriesRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message GetAllCategoriesResponse {
+  repeated GetCategoryResponse items = 1;
+  int32 total_count = 2;
+}
+
+service CategoryService {
+  rpc GetAllCategories(GetAllCategoriesRequest) returns (GetAllCategoriesResponse);
+  rpc GetCategoryById(GetDetailCategoryRequest) returns (GetCategoryResponse);
+  rpc CreateCategory(CreateCategoryRequest) returns (Category);
+  rpc UpdateCategory(UpdateCategoryRequest) returns (Category);
+  rpc DeleteCategory(DeleteCategoryRequest) returns (DeleteCategoryResponse);
+}
