@@ -9,9 +9,23 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - userdb-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
+    networks:
+      - test-synapsis-network
+
+  categorydb:
+    image: postgres:13
+    container_name: categorydb
+    environment:
+      POSTGRES_DB: categorydb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - categorydb-data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
     networks:
       - test-synapsis-network
 
@@ -24,8 +38,9 @@ services:
     restart: on-failure
     depends_on:
       - user-service
+      - category-service
     environment:
-      APP_NAME: user-service
+      APP_NAME: api-gateway
       APP_HTTP_PORT: 9000
       DB_HOST: userdb
       DB_PORT: 5432
@@ -52,7 +67,7 @@ services:
       - userdb
     environment:
       APP_NAME: user-service
-      APP_HTTP_PORT: 50051
+      APP_HTTP_PORT: 9001
       DB_HOST: userdb
       DB_PORT: 5432
       DB_USER: user
@@ -67,12 +82,37 @@ services:
     volumes:
       - ./data:/data
 
+  category-service:
+    hostname: category-service-host
+    build:
+      context: .
+      dockerfile: ./category-service/Dockerfile
+    container_name: category-service
+    restart: on-failure
+    depends_on:
+      - categorydb
+    environment:
+      APP_NAME: category-service
+      APP_HTTP_PORT: 9002
+      DB_HOST: categorydb
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: categorydb
+    ports:
+      - "9002:9002"
+    networks:
+      - test-synapsis-network
+    volumes:
+      - ./data:/data
+
   jaeger:
     hostname: jaeger-host
     image: jaegertracing/all-in-one:latest
     ports:
       - "16686:16686"
       - "9001:9001/udp"
+      - "9002:9002/udp"
     networks:
       - test-synapsis-network
 
@@ -81,4 +121,5 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+  userdb-data:
+  categorydb-data:
