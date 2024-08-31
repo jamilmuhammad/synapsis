@@ -157,7 +157,7 @@ func (h *userHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	payloadPb := &user.GetDetailUserRequest{
-		Id: 1,
+		Id: idPb,
 	}
 
 	result, err := h.repoUser.GetUserById(ctx, payloadPb)
