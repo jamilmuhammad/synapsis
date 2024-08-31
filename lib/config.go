@@ -57,12 +57,13 @@ func getTokenConfig() TokenConfig {
 }
 
 func LoadConfigByFile(path, fileName, fileType string) Config {
-	v := viper.New()
-	v.SetConfigName(fileName)
-	v.SetConfigType(fileType)
-	v.AddConfigPath(path)
-	v.AutomaticEnv()
-	err := v.ReadInConfig()
+	viper.SetConfigName(fileName)
+	viper.SetConfigType(fileType)
+	viper.AddConfigPath(path)
+	viper.AutomaticEnv()
+	
+	err := viper.ReadInConfig()
+
 	if err != nil {
 		fmt.Printf("Error reading config file, use automatic environment instead %s\n", err)
 	}
