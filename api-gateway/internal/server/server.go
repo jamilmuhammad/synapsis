@@ -1,8 +1,6 @@
 package server
 
 import (
-	"api-gateway/internal/user/handler"
-	"api-gateway/internal/user/usecase"
 	"context"
 	"log"
 	"net/http"
@@ -11,7 +9,13 @@ import (
 	"syscall"
 	"time"
 
+	user_handler "api-gateway/internal/user/handler"
+	user_usecase "api-gateway/internal/user/usecase"
 	"user-service/userpb"
+
+	category_handler "api-gateway/internal/category/handler"
+	category_usecase "api-gateway/internal/category/usecase"
+	"category-service/categorypb"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
@@ -31,8 +35,9 @@ func (s *server) Run() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	//user-service
 	userServiceAddress := "user-service:9001"
-	
+
 	userServiceconn, err := grpc.Dial(
 		userServiceAddress,
 		grpc.WithInsecure(),
@@ -45,9 +50,28 @@ func (s *server) Run() error {
 
 	userClient := user.NewUserServiceClient(userServiceconn)
 
-	userUsecase := usecase.NewUserUseCase(userClient)
-	userHandler := handler.NewUserHandler(userUsecase, s.mux)
+	userUsecase := user_usecase.NewUserUseCase(userClient)
+	userHandler := user_handler.NewUserHandler(userUsecase, s.mux)
 	userHandler.Routes()
+
+	//category-service
+	categoryServiceAddress := "category-service:9002"
+
+	categoryServiceconn, err := grpc.Dial(
+		categoryServiceAddress,
+		grpc.WithInsecure(),
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer categoryServiceconn.Close()
+
+	categoryClient := category.NewCategoryServiceClient(categoryServiceconn)
+
+	categoryUsecase := category_usecase.NewCategoryUseCase(categoryClient)
+	categoryHandler := category_handler.NewCategoryHandler(categoryUsecase, s.mux)
+	categoryHandler.Routes()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)

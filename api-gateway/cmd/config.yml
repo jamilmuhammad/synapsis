@@ -1,0 +1,10 @@
+APP_NAME: "api-gateway"
+APP_HTTP_PORT: "9000"
+DB_NAME: ""
+DB_PORT: ""
+DB_HOST: ""
+DB_PASSWORD: ""
+DB_USER: ""
+TIMEZONE: "Asia/Jakarta"
+Access_Token: 'secret123'
+Refresh_Token: 'secret321'
