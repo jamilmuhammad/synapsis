@@ -6,7 +6,7 @@ SOURCE_DIRS=$(shell go list ./... | grep -v /vendor | grep -v /out | cut -d "/" 
 IN_EXE="./cmd"
 OUT_EXE="./bin/report-service"
 
-POSTGRESQL_URL="postgresql://user:pass@localhost:5432/userdb?sslmode=disable"
+POSTGRESQL_URL="postgresql://user:pass@localhost:5433/userdb?sslmode=disable"
 
 build:
 	@GO111MODULE=on go build -o $(OUT_EXE) $(IN_EXE)
