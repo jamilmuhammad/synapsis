@@ -1,3 +1,3 @@
-DROP TRIGGER IF EXISTS update_user_modtime ON users;
+DROP TRIGGER IF EXISTS update_category_modtime ON categories;
 DROP FUNCTION IF EXISTS update_modified_column();
-DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS categories;
