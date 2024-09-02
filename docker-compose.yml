@@ -29,6 +29,20 @@ services:
     networks:
       - test-synapsis-network
 
+  authordb:
+    image: postgres:13
+    container_name: authordb
+    environment:
+      POSTGRES_DB: authordb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - authordb-data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    networks:
+      - test-synapsis-network
+
   api-gateway:
     hostname: api-gateway-host
     build:
@@ -39,6 +53,7 @@ services:
     depends_on:
       - user-service
       - category-service
+      - author-service
     environment:
       APP_NAME: api-gateway
       APP_HTTP_PORT: 9000
@@ -99,8 +114,33 @@ services:
       DB_USER: user
       DB_PASSWORD: pass
       DB_NAME: categorydb
+      
     ports:
       - "9002:9002"
+    networks:
+      - test-synapsis-network
+    volumes:
+      - ./data:/data
+
+  author-service:
+    hostname: author-service-host
+    build:
+      context: .
+      dockerfile: ./author-service/Dockerfile
+    container_name: author-service
+    restart: on-failure
+    depends_on:
+      - authordb
+    environment:
+      APP_NAME: author-service
+      APP_HTTP_PORT: 9003
+      DB_HOST: authordb
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: authordb
+    ports:
+      - "9003:9003"
     networks:
       - test-synapsis-network
     volumes:
@@ -113,6 +153,7 @@ services:
       - "16686:16686"
       - "9001:9001/udp"
       - "9002:9002/udp"
+      - "9003:9003/udp"
     networks:
       - test-synapsis-network
 
@@ -123,3 +164,4 @@ networks:
 volumes:
   userdb-data:
   categorydb-data:
+  authordb-data:
