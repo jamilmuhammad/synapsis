@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package author;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "./;author";
+
+message Author {
+  int64 id = 1;
+  string name = 2;
+  string bio = 3;
+  google.protobuf.Timestamp date_of_birth = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message CreateAuthorRequest {
+  string name = 1;
+  string bio = 2;
+  google.protobuf.Timestamp date_of_birth = 3;
+}
+
+message GetDetailAuthorRequest {
+  int64 id = 1;
+}
+
+message GetAuthorResponse {
+  int64 id = 1;
+  string name = 2;
+  string bio = 3;
+  string date_of_birth = 4;
+}
+
+message UpdateAuthorRequest {
+  int64 id = 1;
+  string name = 2;
+  string bio = 3;
+  google.protobuf.Timestamp date_of_birth = 4;
+}
+
+message DeleteAuthorRequest {
+  int64 id = 1;
+}
+
+message DeleteAuthorResponse {
+  bool success = 1;
+}
+
+message GetAllAuthorsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message GetAllAuthorsResponse {
+  repeated GetAuthorResponse items = 1;
+  int32 total_count = 2;
+}
+
+service AuthorService {
+  rpc GetAllAuthors(GetAllAuthorsRequest) returns (GetAllAuthorsResponse);
+  rpc GetAuthorById(GetDetailAuthorRequest) returns (GetAuthorResponse);
+  rpc CreateAuthor(CreateAuthorRequest) returns (Author);
+  rpc UpdateAuthor(UpdateAuthorRequest) returns (Author);
+  rpc DeleteAuthor(DeleteAuthorRequest) returns (DeleteAuthorResponse);
+}

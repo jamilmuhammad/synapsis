@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS authors (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    bio TEXT DEFAULT NULL,
+    date_of_birth TIMESTAMP DEFAULT NULL,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE OR REPLACE FUNCTION update_modified_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_author_modtime
+BEFORE UPDATE ON authors
+FOR EACH ROW
+EXECUTE FUNCTION update_modified_column();
