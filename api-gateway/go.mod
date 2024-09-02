@@ -10,6 +10,7 @@ require (
 	lib v1.0.1
 	user-service v1.0.1
 	category-service v1.0.1
+	author-service v1.0.1
 )
 
 require (
@@ -52,5 +53,7 @@ require (
 replace user-service v1.0.1 => ../user-service
 
 replace category-service v1.0.1 => ../category-service
+
+replace author-service v1.0.1 => ../author-service
 
 replace lib v1.0.1 => ../lib

@@ -17,6 +17,10 @@ import (
 	category_usecase "api-gateway/internal/category/usecase"
 	"category-service/categorypb"
 
+	author_handler "api-gateway/internal/author/handler"
+	author_usecase "api-gateway/internal/author/usecase"
+	"author-service/authorpb"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
@@ -72,6 +76,25 @@ func (s *server) Run() error {
 	categoryUsecase := category_usecase.NewCategoryUseCase(categoryClient)
 	categoryHandler := category_handler.NewCategoryHandler(categoryUsecase, s.mux)
 	categoryHandler.Routes()
+
+	//author-service
+	authorServiceAddress := "author-service:9003"
+
+	authorServiceconn, err := grpc.Dial(
+		authorServiceAddress,
+		grpc.WithInsecure(),
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer authorServiceconn.Close()
+
+	authorClient := author.NewAuthorServiceClient(authorServiceconn)
+
+	authorUsecase := author_usecase.NewAuthorUseCase(authorClient)
+	authorHandler := author_handler.NewAuthorHandler(authorUsecase, s.mux)
+	authorHandler.Routes()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
