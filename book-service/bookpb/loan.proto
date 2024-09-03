@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package loan;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "./loan";
+
+message Loan {
+  int64 id = 1;
+  google.protobuf.Timestamp loan_date = 2;
+  google.protobuf.Timestamp due_date = 3;
+  google.protobuf.Timestamp return_date = 4;
+  int64 book_id = 5;
+  int64 user_id = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message CreateLoanRequest {
+  google.protobuf.Timestamp loan_date = 1;
+  google.protobuf.Timestamp due_date = 2;
+  google.protobuf.Timestamp return_date = 3;
+  int64 book_id = 4;
+  int64 user_id = 5;
+}
+
+message GetDetailLoanRequest {
+  int64 id = 1;
+}
+
+message GetAuthorResponse {
+  int64 id = 1;
+  string name = 2;
+  string bio = 3;
+  string date_of_birth = 4;
+}
+
+message GetCategoryResponse {
+  int64 id = 1;
+  string name = 2;
+}
+
+message GetBookResponse {
+  int64 id = 1;
+  string title = 2;
+  string isbn = 3;
+  int32 copies = 4;
+  string date_of_publication = 5;
+  GetAuthorResponse author = 6;
+  GetCategoryResponse category = 7;
+}
+
+message GetUserResponse {
+  int64 id = 1;
+  string username = 2;
+  string email = 3;
+  string role = 4;
+  string status = 5;
+}
+
+message GetLoanResponse {
+  int64 id = 1;
+  google.protobuf.Timestamp loan_date = 2;
+  google.protobuf.Timestamp due_date = 3;
+  google.protobuf.Timestamp return_date = 4;
+  GetUserResponse user = 5;
+  GetBookResponse book = 6;
+}
+
+message UpdateLoanRequest {
+  int64 id = 1;
+  google.protobuf.Timestamp loan_date = 2;
+  google.protobuf.Timestamp due_date = 3;
+  google.protobuf.Timestamp return_date = 4;
+  int64 book_id = 5;
+  int64 user_id = 6;
+}
+
+message DeleteLoanRequest {
+  int64 id = 1;
+}
+
+message DeleteLoanResponse {
+  bool success = 1;
+}
+
+message GetAllLoansRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message GetAllLoansResponse {
+  repeated GetLoanResponse items = 1;
+  int32 total_count = 2;
+}
+
+service LoanService {
+  rpc GetAllLoans(GetAllLoansRequest) returns (GetAllLoansResponse);
+  rpc GetLoanById(GetDetailLoanRequest) returns (GetLoanResponse);
+  rpc CreateLoan(CreateLoanRequest) returns (Loan);
+  rpc UpdateLoan(UpdateLoanRequest) returns (Loan);
+  rpc DeleteLoan(DeleteLoanRequest) returns (DeleteLoanResponse);
+}

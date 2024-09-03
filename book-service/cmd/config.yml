@@ -1,0 +1,10 @@
+APP_NAME: "book-service"
+APP_HTTP_PORT: "9004"
+DB_NAME: "bookdb"
+DB_PORT: "5432"
+DB_HOST: "bookdb"
+DB_PASSWORD: "pass"
+DB_USER: "user"
+TIMEZONE: "Asia/Jakarta"
+Access_Token: 'secret123'
+Refresh_Token: 'secret321'
