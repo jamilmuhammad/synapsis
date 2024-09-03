@@ -21,6 +21,10 @@ import (
 	author_usecase "api-gateway/internal/author/usecase"
 	"author-service/authorpb"
 
+	book_handler "api-gateway/internal/book/handler"
+	book_usecase "api-gateway/internal/book/usecase"
+	"book-service/bookpb/book"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
@@ -95,6 +99,25 @@ func (s *server) Run() error {
 	authorUsecase := author_usecase.NewAuthorUseCase(authorClient)
 	authorHandler := author_handler.NewAuthorHandler(authorUsecase, s.mux)
 	authorHandler.Routes()
+
+	//book-service
+	bookServiceAddress := "book-service:9004"
+
+	bookServiceconn, err := grpc.Dial(
+		bookServiceAddress,
+		grpc.WithInsecure(),
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer bookServiceconn.Close()
+
+	bookClient := book.NewBookServiceClient(bookServiceconn)
+
+	bookUsecase := book_usecase.NewBookUseCase(bookClient)
+	bookHandler := book_handler.NewBookHandler(bookUsecase, s.mux)
+	bookHandler.Routes()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)

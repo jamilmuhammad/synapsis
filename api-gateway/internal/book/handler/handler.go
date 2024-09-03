@@ -7,35 +7,35 @@ import (
 	"net/http"
 	"strconv"
 
-	interfaces "api-gateway/internal/author/interface"
+	interfaces "api-gateway/internal/book/interface"
 	"api-gateway/internal/models"
-	"author-service/authorpb"
+	"book-service/bookpb/book"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type authorHandler struct {
-	r          *mux.Router
-	validate   *validator.Validate
-	repoAuthor interfaces.AuthorInterfaceUseCase
+type bookHandler struct {
+	r        *mux.Router
+	validate *validator.Validate
+	repoBook interfaces.BookInterfaceUseCase
 }
 
-func NewAuthorHandler(repoAuthor interfaces.AuthorInterfaceUseCase, r *mux.Router) *authorHandler {
-	return &authorHandler{repoAuthor: repoAuthor, r: r, validate: validator.New()}
+func NewBookHandler(repoBook interfaces.BookInterfaceUseCase, r *mux.Router) *bookHandler {
+	return &bookHandler{repoBook: repoBook, r: r, validate: validator.New()}
 }
 
-func (h *authorHandler) GetAllAuthors(w http.ResponseWriter, r *http.Request) {
+func (h *bookHandler) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 
-	sp := lib.CreateRootSpan(r, "GetAllAuthors")
+	sp := lib.CreateRootSpan(r, "GetAllBooks")
 	defer sp.Finish()
 
 	page := r.URL.Query().Get("page")
 
 	limit := r.URL.Query().Get("limit")
 
-	payload := &models.GetAllAuthorsRequest{
+	payload := &models.GetAllBooksRequest{
 		Page:  page,
 		Limit: limit,
 	}
@@ -65,12 +65,12 @@ func (h *authorHandler) GetAllAuthors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payloadPb := &author.GetAllAuthorsRequest{
+	payloadPb := &book.GetAllBooksRequest{
 		Page:  int32(pagePb),
 		Limit: int32(limitPb),
 	}
 
-	result, err := h.repoAuthor.GetAllAuthors(ctx, payloadPb)
+	result, err := h.repoBook.GetAllBooks(ctx, payloadPb)
 
 	if err != nil {
 		lib.WriteResponse(sp, w, err, nil)
@@ -81,12 +81,12 @@ func (h *authorHandler) GetAllAuthors(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *authorHandler) CreateAuthor(w http.ResponseWriter, r *http.Request) {
+func (h *bookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 
-	sp := lib.CreateRootSpan(r, "CreateAuthor")
+	sp := lib.CreateRootSpan(r, "CreateBook")
 	defer sp.Finish()
 
-	var payload models.CreateAuthorRequest
+	var payload models.CreateBookRequest
 
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
@@ -104,15 +104,17 @@ func (h *authorHandler) CreateAuthor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dobTimestampProto := timestamppb.New(payload.DateOfBirth.Time)
+	dopTimestampProto := timestamppb.New(payload.DateOfPublication.Time)
 
-	payloadPb := &author.CreateAuthorRequest{
-		Name:        payload.Name,
-		Bio:         payload.Bio,
-		DateOfBirth: dobTimestampProto,
+	payloadPb := &book.CreateBookRequest{
+		Title:             payload.Title,
+		Isbn:              payload.Isbn,
+		DateOfPublication: dopTimestampProto,
+		AuthorId:          payload.AuthorId,
+		CategoryId:        payload.CategoryId,
 	}
 
-	result, err := h.repoAuthor.CreateAuthor(ctx, payloadPb)
+	result, err := h.repoBook.CreateBook(ctx, payloadPb)
 
 	if err != nil {
 		lib.WriteResponse(sp, w, err, nil)
@@ -123,14 +125,14 @@ func (h *authorHandler) CreateAuthor(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *authorHandler) GetAuthorById(w http.ResponseWriter, r *http.Request) {
+func (h *bookHandler) GetBookById(w http.ResponseWriter, r *http.Request) {
 
-	sp := lib.CreateRootSpan(r, "GetAuthorById")
+	sp := lib.CreateRootSpan(r, "GetBookById")
 	defer sp.Finish()
 
 	id := mux.Vars(r)["id"]
 
-	payload := &models.GetDetailAuthorRequest{
+	payload := &models.GetDetailBookRequest{
 		ID: id,
 	}
 
@@ -152,11 +154,11 @@ func (h *authorHandler) GetAuthorById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payloadPb := &author.GetDetailAuthorRequest{
+	payloadPb := &book.GetDetailBookRequest{
 		Id: idPb,
 	}
 
-	result, err := h.repoAuthor.GetAuthorById(ctx, payloadPb)
+	result, err := h.repoBook.GetBookById(ctx, payloadPb)
 
 	if err != nil {
 		lib.WriteResponse(sp, w, lib.NewErrNotFound(err.Error()), nil)
@@ -167,14 +169,14 @@ func (h *authorHandler) GetAuthorById(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *authorHandler) UpdateAuthor(w http.ResponseWriter, r *http.Request) {
+func (h *bookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 
-	sp := lib.CreateRootSpan(r, "UpdateAuthor")
+	sp := lib.CreateRootSpan(r, "UpdateBook")
 	defer sp.Finish()
 
 	id := mux.Vars(r)["id"]
 
-	var payload = &models.UpdateAuthorRequest{}
+	var payload = &models.UpdateBookRequest{}
 
 	err := json.NewDecoder(r.Body).Decode(&payload)
 
@@ -202,16 +204,18 @@ func (h *authorHandler) UpdateAuthor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dobTimestampProto := timestamppb.New(payload.DateOfBirth.Time)
+	dopTimestampProto := timestamppb.New(payload.DateOfPublication.Time)
 
-	payloadPb := &author.UpdateAuthorRequest{
-		Id:          int64(idPb),
-		Name:        payload.Name,
-		Bio:         payload.Bio,
-		DateOfBirth: dobTimestampProto,
+	payloadPb := &book.UpdateBookRequest{
+		Id:                idPb,
+		Title:             payload.Title,
+		Isbn:              payload.Isbn,
+		DateOfPublication: dopTimestampProto,
+		AuthorId:          payload.AuthorId,
+		CategoryId:        payload.CategoryId,
 	}
 
-	result, err := h.repoAuthor.UpdateAuthor(ctx, payloadPb)
+	result, err := h.repoBook.UpdateBook(ctx, payloadPb)
 
 	if err != nil {
 		lib.WriteResponse(sp, w, lib.NewErrBadRequest(err.Error()), nil)
@@ -222,14 +226,14 @@ func (h *authorHandler) UpdateAuthor(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *authorHandler) DeleteAuthor(w http.ResponseWriter, r *http.Request) {
+func (h *bookHandler) DeleteBook(w http.ResponseWriter, r *http.Request) {
 
-	sp := lib.CreateRootSpan(r, "DeleteAuthor")
+	sp := lib.CreateRootSpan(r, "DeleteBook")
 	defer sp.Finish()
 
 	id := mux.Vars(r)["id"]
 
-	payload := &models.DeleteAuthorRequest{
+	payload := &models.DeleteBookRequest{
 		ID: id,
 	}
 
@@ -251,11 +255,11 @@ func (h *authorHandler) DeleteAuthor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payloadPb := &author.DeleteAuthorRequest{
+	payloadPb := &book.DeleteBookRequest{
 		Id: int64(idPb),
 	}
 
-	result, err := h.repoAuthor.DeleteAuthor(ctx, payloadPb)
+	result, err := h.repoBook.DeleteBook(ctx, payloadPb)
 
 	if err != nil {
 		lib.WriteResponse(sp, w, lib.NewErrBadRequest(err.Error()), nil)
